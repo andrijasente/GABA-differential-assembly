@@ -14,7 +14,7 @@ Columns 4-12 represent relative interface likelihoods in the order: [aa, ab, ad,
 | b | ba  | bb  | bd |
 | x | da  | db  | dd |
 
- First subunit in the pairwise interface is principal, second is complementary [#ab = a+/b-]
+ First subunit in the pairwise interface is principal, second is complementary [ab = a+/b-]
  All receptor arrangements are read counterclockwise.
 
 Columns 13-63 represent the abundances of the 51 receptor subtypes that can assemble from a pool three diffeent subunits. A lookup dataframe is generated within the analysis script.
