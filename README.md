@@ -7,10 +7,10 @@ Columns 1-3 in the file simulation_aa9_all.txt represent relative abundances for
 Columns 4-12 represent relative interface likelihoods in the order: [aa, ab, ad, ba, bb, bd, da, db, dd] as given by the following matrix:
 
  Interface matrix:
-    a b  d
- a aa ab ad
- b ba bb bd
- d da db dd
+    a b  d\n
+ a aa ab ad\n
+ b ba bb bd\n
+ d da db dd\n
 
  First subunit in the pairwise interface is principal, second is complementary [ab = a+/b-]
  All receptor arrangements are read counterclockwise.
