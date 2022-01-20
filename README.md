@@ -12,11 +12,11 @@ Columns 4-12 represent relative interface likelihoods in the order: [aa, ab, ad,
  b ba bb bd\n
  d da db dd\n
  
-  |  a  | b   | x  |
-  | --- | --- | -- |
-a | aa  | ab  | ad |
-b | ba  | bb  | bd |
-x | da  | db  | dd |
+|   |  a  | b   | x  |
+| --| --- | --- | -- |
+| a | aa  | ab  | ad |
+| b | ba  | bb  | bd |
+| x | da  | db  | dd |
 
  First subunit in the pairwise interface is principal, second is complementary [ab = a+/b-]
  All receptor arrangements are read counterclockwise.
