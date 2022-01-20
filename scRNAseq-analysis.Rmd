@@ -1,0 +1,126 @@
+---
+title: "Differential assembly diversifies GABA-A receptor structures and signaling"
+author: "Andrija Sente"
+date: "20/01/2022"
+output: html_document
+---
+
+This script reproduces the scRNAseq analysis used in the paper:
+
+==============================================================================
+
+**Differential assembly diversifies GABA-A receptor structures and signaling**
+
+Andrija Sente1\*, Rooma Desai2, Katerina Naydenova1, Tomas Malinauskas3, Youssef Jounaidi2, Jonas Miehling1, Xiaojuan Zhou2, Simonas Masiulis1,4, Steven W. Hardwick5, Dimitri Y. Chirgadze5, Keith W. Miller2\*, A. Radu Aricescu1\*
+
+1 - MRC Laboratory of Molecular Biology, Francis Crick Avenue, Cambridge, CB2 0QH, UK.\
+2 - Department of Anesthesia, Critical Care and Pain Medicine, Massachusetts General Hospital, Harvard Medical School, Boston, MA, USA.\
+3 - Division of Structural Biology, Wellcome Centre for Human Genetics, University of Oxford, Roosevelt Drive, Oxford, OX3 7BN, UK.\
+4 - Current address: Materials and Structural Analysis Division, Thermo Fisher Scientific, Achtseweg Noord, Eindhoven, 5651 GG, Netherlands.\
+5 - Department of Biochemistry, University of Cambridge, Tennis Court Road, Cambridge, CB2 1GA, UK.\
+
+\* - Correspondence to: asente\@mrc-lmb.cam.ac.uk or k_miller\@helix.mgh.harvard.edu or radu\@mrc-lmb.cam.ac.uk
+
+==============================================================================
+
+This script generates panels for **Extended Data Figure 7a-b**
+
+The trimmed_means.csv data used in the paper is available here:
+ftp://ftp.mrc-lmb.cam.ac.uk/pub/asente/differential-assembly/trimmed_means.csv
+
+It is also downloadable from the following page:
+https://portal.brain-map.org/atlases-and-data/rnaseq/human-multiple-cortical-areas-smart-seq
+
+If you use this data, please cite the following two papers:
+Hodge, R.D., Bakken, T.E., et al. (2019). "Conserved cell types with divergent features in human versus mouse cortex." Nature 573:61-68.\
+Tasic, B., et al. (2018). "Shared and distinct transcriptomic cell types across neocortical areas." Nature 563(7729): 72-78. doi: 10.1038/s41586-018-0654-5. Epub 2018 Oct 31.
+
+==============================================================================
+
+```{r, message=FALSE}
+# Set up the environment
+library(tidyverse)
+library(pheatmap)
+library(grid)
+library('RColorBrewer')
+require(dplyr)     
+require(UpSetR)
+
+```
+
+```{r setup, include = FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/gaba/')
+```
+
+Set the threshold above which a gene is considered expressed.
+
+```{r}
+CPM_THRESHOLD <- 0
+```
+
+# Part 1: Plotting Extended Data Figure 7b
+
+Load the trimmed means data
+
+```{r}
+trimmed_means <- read.csv('brain_map_allen/trimmed_means.csv', 
+                          stringsAsFactors = F, header = F)
+trimmed_means <- as.data.frame(trimmed_means)
+new_names <- make.names(trimmed_means[1, ])
+colnames(trimmed_means) <- new_names
+trimmed_means <- trimmed_means[-1, ]
+
+# Find rows with GABAA receptor genes
+gaba_trimmed_means <- trimmed_means[grep(trimmed_means$X, pattern = 'GABR'), ]
+rownames(gaba_trimmed_means) <- gaba_trimmed_means$X
+gaba_trimmed_means$X <- NULL
+rows <- rownames(gaba_trimmed_means)
+
+# Convert CPMs to numeric.
+gaba_trimmed_means <- mutate_all(gaba_trimmed_means,
+                                 function(x) as.numeric(as.character(x)))
+
+# Add rownames
+rownames(gaba_trimmed_means) <- rows
+
+# Plot heatmap of trimmed mean counts (Extended Data Figure 7b)
+heatmap_plot <- pheatmap(mat = as.matrix(t(gaba_trimmed_means)), 
+                         cluster_cols = F, fontsize = 4,
+                         color = colorRampPalette(brewer.pal(n = 7, name = "Blues"))(100),
+                         angle_col = '45')
+```
+
+# Part 2: Plotting Extended Data Figure 7a
+
+Binarize and transpose the data frame:
+
+```{r}
+gaba_trimmed_means_binarized <- mutate_all(gaba_trimmed_means, 
+                                           function(x) {ifelse(x > CPM_THRESHOLD, 1, 0)})
+rownames(gaba_trimmed_means_binarized) <- rows
+gaba_upsetR <- as.data.frame(t(gaba_trimmed_means_binarized))
+colnames(gaba_upsetR) <- rows
+```
+
+Plot Extended Data Figure 7a:
+
+```{r}
+upset_plot <- upset(gaba_upsetR, sets = rows,
+                    order.by = c('freq'), mb.ratio = c(0.35, 0.65), 
+                    keep.order = T, nintersects = NA)
+upset_plot
+```
+
+Save the plots:
+
+```{r}
+# pdf('~/Dropbox/lab-notes/extrasynaptic-manuscript/Figures/bioinformatics/RNAseq-heatmap.pdf', 
+#     width = 8, height = 8, onefile = F) # onefile avoids printing on two pdf pages - upsetR bug?
+# print(heatmap_plot)
+# dev.off()
+# 
+# pdf('~/Dropbox/lab-notes/extrasynaptic-manuscript/Figures/bioinformatics/RNAseq-heatmap-new.pdf', 
+#     width = 6.6, height = 6.6, onefile = F) # onefile avoids printing on two pdf pages - upsetR bug?
+# print(heatmap_plot)
+# dev.off()
+```
